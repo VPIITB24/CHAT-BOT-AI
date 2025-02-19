@@ -1,0 +1,54 @@
+` tags.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat with Dominic Toretto</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-blue-100 flex flex-col min-h-screen">
+  <div class="flex-grow container mx-auto py-6 px-4">
+    <div class="h-full w-full max-w-2xl mx-auto">
+      <div id="chatbox" class="flex flex-col items-start overflow-y-auto h-full p-1 rounded"></div>
+    </div>
+  </div>
+  <div class="sticky bottom-0 w-full">
+    <div class="flex justify-center">
+      <div class="px-2 w-full max-w-2xl">
+        <div class="flex flex-col my-5">
+          <input
+            class="shadow flex-grow rounded p-2 mb-2 shadow appearance-none border rounded w-full  text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="messageInput"
+            type="text"
+            placeholder="Type your message"
+          />
+          <div class="flex justify-between space-x-2">
+            <button
+              class="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded w-full sm:w-auto"
+              id="clearButton"
+            >
+              Clear Chat
+            </button>
+            <button
+              class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded w-full sm:w-auto"
+              id="sendButton"
+            >
+              Ask Dom!
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const messageInput = document.getElementById("messageInput");
+    const sendButton = document.getElementById("sendButton");
+    const clearButton = document.getElementById("clearButton");
+    const chatId = crypto.randomUUID();
+    let websocket = null
