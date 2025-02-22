@@ -80,23 +80,32 @@
 
     // Function to send a message to the OpenAI API
     async function sendToOpenAI(message) {
-      const apiKey = " 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"; // Replace with your OpenAI API key
+      const apiKey = "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"; // Replace with your new API key
       const url = "https://api.openai.com/v1/chat/completions";
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: message }],
-        }),
-      });
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: message }],
+          }),
+        });
 
-      const data = await response.json();
-      return data.choices[0].message.content;
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+      } catch (error) {
+        console.error("Error:", error);
+        throw error;
+      }
     }
 
     // Send message when the "Send" button is clicked
@@ -111,7 +120,7 @@
           const botResponse = await sendToOpenAI(message);
           addMessageToChatbox(botResponse); // Add bot's response to chatbox
         } catch (error) {
-          addMessageToChatbox("Error: Unable to connect to the AI server.");
+          addMessageToChatbox("Error: Unable to connect to the AI server. Please check your API key and internet connection.");
         }
       }
     });
