@@ -1,54 +1,127 @@
-` tags.
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat with Dominic Toretto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chatbot</title>
   <link
-    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css"
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
     rel="stylesheet"
   />
+  <style>
+    /* Custom scrollbar for chatbox */
+    #chatbox::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chatbox::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    #chatbox::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    #chatbox::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style>
 </head>
-<body class="bg-blue-100 flex flex-col min-h-screen">
+<body class="bg-gray-100 flex flex-col min-h-screen">
+  <!-- Chat Container -->
   <div class="flex-grow container mx-auto py-6 px-4">
     <div class="h-full w-full max-w-2xl mx-auto">
-      <div id="chatbox" class="flex flex-col items-start overflow-y-auto h-full p-1 rounded"></div>
+      <!-- Chatbox -->
+      <div id="chatbox" class="flex flex-col space-y-4 overflow-y-auto h-[70vh] p-4 bg-white rounded-lg shadow-md"></div>
     </div>
   </div>
-  <div class="sticky bottom-0 w-full">
+
+  <!-- Input Container -->
+  <div class="sticky bottom-0 w-full bg-gray-100 py-4">
     <div class="flex justify-center">
       <div class="px-2 w-full max-w-2xl">
-        <div class="flex flex-col my-5">
+        <div class="flex flex-col space-y-2">
           <input
-            class="shadow flex-grow rounded p-2 mb-2 shadow appearance-none border rounded w-full  text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="messageInput"
             type="text"
-            placeholder="Type your message"
+            placeholder="Type your message..."
+            class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <div class="flex justify-between space-x-2">
-            <button
-              class="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded w-full sm:w-auto"
-              id="clearButton"
-            >
-              Clear Chat
-            </button>
-            <button
-              class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded w-full sm:w-auto"
-              id="sendButton"
-            >
-              Ask Dom!
-            </button>
-          </div>
+          <button
+            id="sendButton"
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+          >
+            Send
+          </button>
         </div>
       </div>
     </div>
   </div>
+
   <script>
     const chatbox = document.getElementById("chatbox");
     const messageInput = document.getElementById("messageInput");
     const sendButton = document.getElementById("sendButton");
-    const clearButton = document.getElementById("clearButton");
-    const chatId = crypto.randomUUID();
-    let websocket = null
+
+    // Function to add a message to the chatbox
+    function addMessageToChatbox(message, isUser = false) {
+      const messageElement = document.createElement("div");
+      messageElement.className = `flex ${isUser ? "justify-end" : "justify-start"}`;
+      messageElement.innerHTML = `
+        <div class="${
+          isUser
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-800"
+        } rounded-lg p-3 max-w-[70%]">
+          ${message}
+        </div>
+      `;
+      chatbox.appendChild(messageElement);
+      chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the latest message
+    }
+
+    // Function to send a message to the OpenAI API
+    async function sendToOpenAI(message) {
+      const apiKey = " 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"; // Replace with your OpenAI API key
+      const url = "https://api.openai.com/v1/chat/completions";
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: message }],
+        }),
+      });
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    }
+
+    // Send message when the "Send" button is clicked
+    sendButton.addEventListener("click", async () => {
+      const message = messageInput.value.trim();
+      if (message) {
+        addMessageToChatbox(message, true); // Add user's message to chatbox
+        messageInput.value = ""; // Clear the input field
+
+        // Get response from OpenAI
+        try {
+          const botResponse = await sendToOpenAI(message);
+          addMessageToChatbox(botResponse); // Add bot's response to chatbox
+        } catch (error) {
+          addMessageToChatbox("Error: Unable to connect to the AI server.");
+        }
+      }
+    });
+
+    // Send message when "Enter" key is pressed
+    messageInput.addEventListener("keypress", async (e) => {
+      if (e.key === "Enter") {
+        sendButton.click();
+      }
+    });
+  </script>
+</body>
+</html>
